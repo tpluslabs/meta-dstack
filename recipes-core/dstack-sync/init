@@ -1,0 +1,49 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:             dstack-sync
+# Required-Start:       $remote_fs $syslog $networking
+# Required-Stop:        $remote_fs $syslog
+# Default-Start:        2 3 4 5
+# Default-Stop:         1
+# Short-Description:    Start and stop the dstack-sync daemon
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+NAME=dstack-sync
+DESC="Dstack Sync"
+DAEMON=/usr/bin/ping
+LOGFILE=/var/log/dstack-sync.log
+LOGFILE_MONITOR=/var/log/dstack-sync_monitor.log
+PIDFILE=/var/run/dstack-sync.pid
+PIDFILE_MONITOR=/var/run/dstack-sync_monitor.pid
+SYSTEM_API_FIFO=/var/volatile/system-api.fifo
+
+
+start() {
+    mkdir /home/root/fromdstack
+    exec $DAEMON
+    mkdir /home/root/executeddaemon
+}
+
+stop() {
+    mkdir /home/root/fromdstack
+}
+
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart)
+	stop
+	start
+	;;
+  *)
+	echo "Usage: $0 {start|stop|restart}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
