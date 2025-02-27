@@ -19,10 +19,30 @@ Then create and initialize the multirepo directory:
 
 ```
 mkdir yetanother; cd yetanother
+
 repo init -u https://github.com/flashbots/yocto-manifests.git -b main -m tdx-base.xml
+
 repo sync
+
 source setup
+
 cd srcs/poky;git clone https://github.com/tpluslabs/meta-dstack;cd ../../
+
 chmod 777 srcs/poky/meta-dstack/get-modular.sh
+```
+
+Now you can run the `get-modular` script to apply the patches and add the dstack layer to the base minimal image:
+
+```
 ./srcs/poky/meta-dstack/get-modular.sh
 ```
+
+> If you're deploying production then set `PROD=true` before running the above script, it will apply the prod patches.
+
+## Customizing the dstack guest impl
+
+The `meta-dstack` layer is based off the binary you're running after boot, current one is just a ping, actual dstack guest soon. If you want to modify your modular dstack impl, just rebuild the binary and replace it with the one in the meta-dstack/recipes-core.
+
+# Build
+
+You can now build the `cvm-image-minimal` image with bitbake! 
