@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# handy command to compare two images sources: 
+# diff -r -x ".repo" -x ".git" -x "tmp" -x "bitbake" -x "bitbake-cookerdaemon.log" -x "bitbake.lock" -x "cache" -x "lib" -x "sstate-cache" -x "downloads" yetanother/ original/
+
 cd srcs/poky
 echo "Adding meta-dstack layer..."
 bitbake-layers add-layer meta-dstack
@@ -8,7 +11,7 @@ rm -rf meta-confidential-compute
 git clone https://github.com/flashbots/meta-confidential-compute
 cd meta-confidential-compute
 git checkout v3
-rm -rf cvm-*
+cd recipes-core; rm -rf cvm-*;cd ..
 cd ..
 
 echo "Applying dstack patches"
