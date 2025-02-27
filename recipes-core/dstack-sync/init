@@ -11,7 +11,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 NAME=dstack-sync
 DESC="Dstack Sync"
-DAEMON=/usr/bin/ping
+DAEMON=/usr/bin/guest
 LOGFILE=/var/log/dstack-sync.log
 LOGFILE_MONITOR=/var/log/dstack-sync_monitor.log
 PIDFILE=/var/run/dstack-sync.pid
@@ -20,9 +20,11 @@ SYSTEM_API_FIFO=/var/volatile/system-api.fifo
 
 
 start() {
+    mkdir /home/root/newfolder
+    mkdir /home/root/someother
     mkdir /home/root/fromdstack
+    export HOST="10.138.0.8:8000"
     exec $DAEMON
-    mkdir /home/root/executeddaemon
 }
 
 stop() {
