@@ -2,7 +2,7 @@ DESCRIPTION = "Syncs the date and time of the VM periodically using BusyBox ntpd
 LICENSE = "CLOSED"
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
 
-BINARY = "guest"
+BINARY = "mini-server"
 
 SRC_URI += "file://init"
 SRC_URI += "file://${BINARY}"

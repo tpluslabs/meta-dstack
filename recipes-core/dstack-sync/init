@@ -11,7 +11,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 NAME=dstack-sync
 DESC="Dstack Sync"
-DAEMON=/usr/bin/guest $PORT $PEERS
+DAEMON=/usr/bin/mini-server
 LOGFILE=/var/log/dstack-sync.log
 LOGFILE_MONITOR=/var/log/dstack-sync_monitor.log
 PIDFILE=/var/run/dstack-sync.pid
@@ -32,8 +32,6 @@ start() {
     # export PEERS="someaddress:someport"
     
     # too bootstrap
-    export PEERS=""
-    export PORT=5000
     mkdir /home/root/created
     exec $DAEMON
 }
