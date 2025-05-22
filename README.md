@@ -1,9 +1,11 @@
 # Meta Dstack
-### Get modular dstack!
+
+### Minimal dstackOS with virtualization!
 
 This repo provides:
 1. patches over the flashbots/yocto-manifests to enable flashbots/meta-confidential-compute to run on gcp by setting the [required kernel flags](https://cloud.google.com/confidential-computing/confidential-vm/docs/create-custom-confidential-vm-images#intel-tdx). Since meta-confidential-compute already had a branch with a more structured whay to handle kernel features on different targets we use that instead of writing these flags to a patch. We also remove some services that we don't want to default include (cvm-*).
-2. a simple yocto layer that allows to boot images running the guest environment in https://github.com/heytdep/rs-modular-dstack. 
+2. virtualization through meta-virtualization + a small patch (a file rename mainly) over custom-podman from flashbots to enable podman. 
+3. a simple yocto layer that contains a [minimal cvm server implementation](./server/) to manage pods and generate quotes without extending rtmrs (current gcp guest seems to not have merged the path to extend rtmrs through tsm).
 
 # Setup
 
@@ -39,10 +41,15 @@ Now you can run the `get-modular` script to apply the patches and add the dstack
 
 > If you're deploying production then set `PROD=true` before running the above script, it will apply the prod patches.
 
-## Customizing the dstack guest impl
-
-The `meta-dstack` layer is based off the binary you're running after boot, current one is just a ping, actual dstack guest soon. If you want to modify your modular dstack impl, just rebuild the binary and replace it with the one in the meta-dstack/recipes-core.
-
 # Build
 
 You can now build the `core-image-minimal` image with bitbake! 
+
+```
+cd srcs/poky/
+bitbake core-image-minimal
+```
+
+# License
+
+MIT license.
