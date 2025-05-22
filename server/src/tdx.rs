@@ -65,6 +65,7 @@ impl PodManager {
             hex::decode(report_data).map_err(|_| Wrapper("invalid hex".into()))?,
         ]
         .concat();
+
         let quote = quote::get_quote(&report_data).await;
 
         match quote {
