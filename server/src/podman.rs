@@ -1,55 +1,49 @@
-use crate::Wrapper;
+use crate::tdx::{PodManager, PodManagerInstruction};
 use bytes::Bytes;
 use sha2::Digest;
-use std::{io::Write, path::PathBuf};
+use std::{io::Write, path::PathBuf, sync::Arc};
 use tempfile::NamedTempFile;
-use tokio::process::Command;
+use tokio::{process::Command, sync::mpsc};
 
-pub async fn handle_pod_yml(body: Bytes) -> Result<impl warp::Reply, warp::Rejection> {
-    let pod_hash = sha2::Sha384::digest(&body).to_vec();
-    let client = tsm_client::make_client().map_err(|e| {
-        tracing::error!("failed to create tsm client: {}", e);
-        warp::reject::custom(Wrapper(format!("failed to create tsm client: {}", e)))
-    })?;
+impl PodManager {
+    pub(crate) async fn handle_pod_yml(&mut self, pod_config: Bytes) -> anyhow::Result<()> {
+        let pod_hash = sha2::Sha384::digest(&pod_config).try_into().unwrap();
+        self.loaded_pods.push(pod_hash);
+        tracing::info!("handling new pod config.");
 
-    if let Err(e) = tsm_client::rtmr::extend_digest(&client, 3, &pod_hash) {
-        return Err(warp::reject::custom(Wrapper(format!(
-            "failed to extend rtmr3: {}",
-            e
-        ))));
+        // nb: need to await for gcp to actually merge the kernel with support for tsm based rtmr interactions.
+        //let client = tsm_client::make_client()?;
+        //tsm_client::rtmr::extend_digest(&client, 3, &pod_hash)?;
+        //tracing::info!("extended rmtr3 with digest {}", hex::encode(&pod_hash));
+
+        let mut tmpfile = NamedTempFile::new()?;
+        tmpfile.write_all(&pod_config)?;
+
+        let path: PathBuf = tmpfile.path().into();
+        tracing::info!("Executing podman with pod configuration");
+        let status = Command::new("podman")
+            .args(&["play", "kube", "--pull=missing", path.to_str().unwrap()])
+            .status()
+            .await?;
+
+        if status.success() {
+            tracing::info!("Pod started successfully");
+        } else {
+            tracing::error!("Failed to start pod with exit code: {:?}", status.code());
+        }
+
+        Ok(())
     }
+}
 
-    let mut tmpfile = NamedTempFile::new().map_err(|e| {
-        tracing::error!("Temp file creation failed: {}", e);
-        warp::reject::custom(Wrapper(format!("temp file creation failed {e}")))
-    })?;
-    tmpfile.write_all(&body).map_err(|e| {
-        tracing::error!("Writing to temp file failed: {}", e);
-        warp::reject::custom(Wrapper(format!("writing to temp file failed: {e}")))
-    })?;
+pub async fn handle_pod_yml(
+    sender: Arc<mpsc::Sender<PodManagerInstruction>>,
+    body: Bytes,
+) -> Result<impl warp::Reply, warp::Rejection> {
+    let _ = sender.send(PodManagerInstruction::CreatePod(body)).await;
 
-    let path: PathBuf = tmpfile.path().into();
-    tracing::info!("Executing podman with pod configuration");
-    let status = Command::new("podman")
-        .args(&["play", "kube", path.to_str().unwrap()])
-        .status()
-        .await
-        .map_err(|e| {
-            tracing::error!("Failed to execute podman: {}", e);
-            warp::reject::custom(Wrapper(format!("Failed to execute podman: {e}")))
-        })?;
-
-    if status.success() {
-        tracing::info!("Pod started successfully");
-        Ok(warp::reply::with_status(
-            "Pod started",
-            warp::http::StatusCode::CREATED,
-        ))
-    } else {
-        tracing::error!("Failed to start pod with exit code: {:?}", status.code());
-        Ok(warp::reply::with_status(
-            "Failed to start pod",
-            warp::http::StatusCode::INTERNAL_SERVER_ERROR,
-        ))
-    }
+    Ok(warp::reply::with_status(
+        "forwared to internal pod manager worker",
+        warp::http::StatusCode::OK,
+    ))
 }

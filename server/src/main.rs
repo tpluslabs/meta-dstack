@@ -1,5 +1,8 @@
+use std::sync::Arc;
+
 use podman::handle_pod_yml;
-use tdx::handle_quote_request;
+use tdx::{PodManager, handle_quote_request};
+use tokio::sync::mpsc;
 use tracing::{Level, info};
 use warp::{Filter, reject::Reject};
 
@@ -10,13 +13,28 @@ mod tdx;
 async fn main() {
     tracing_subscriber::fmt().with_max_level(Level::INFO).init();
 
+    let (tx, rx) = mpsc::channel(10);
+
+    let sender = Arc::new(tx.clone());
+    let sender = warp::any().map({
+        let sender = Arc::clone(&sender);
+        move || Arc::clone(&sender)
+    });
+
+    tokio::spawn(async {
+        let mut manager = PodManager::new(rx);
+        manager.worker().await;
+    });
+
     let pods = warp::post()
         .and(warp::path("pods"))
+        .and(sender.clone())
         .and(warp::body::bytes())
         .and_then(handle_pod_yml);
 
     let get_quote = warp::get()
         .and(warp::path!("quote" / String))
+        .and(sender)
         .and_then(handle_quote_request);
 
     let status = warp::get()
