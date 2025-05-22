@@ -12,6 +12,21 @@ git clone https://github.com/flashbots/meta-confidential-compute
 cd meta-confidential-compute
 git checkout v3
 cd recipes-core; rm -rf cvm-*;cd ..
+
+git clone https://git.yoctoproject.org/meta-virtualization.git
+cd meta-virtualization/
+git checkout scarthgap 
+cd ..
+cd meta-openembedded
+git checkout scarthgap
+cd ..
+bitbake-layers add-layer meta-openembedded
+bitbake-layers add-layer ./meta-openembedded/meta-oe/
+bitbake-layers add-layer ./meta-openembedded/meta-python/
+bitbake-layers add-layer ./meta-openembedded/meta-networking
+bitbake-layers add-layer ./meta-openembedded/meta-filesystems/
+bitbake-layers add-layer meta-virtualization
+
 git clone https://github.com/flashbots/meta-custom-podman
 mv meta-custom-podman/recipes-core/images/cvm-initramfs.bbappend meta-custom-podman/recipes-core/images/core-image-minimal.bbappend
 bitbake-layers add-layer meta-custom-podman
