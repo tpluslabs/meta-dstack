@@ -22,7 +22,7 @@ impl PodManager {
         let path: PathBuf = tmpfile.path().into();
         tracing::info!("Executing podman with pod configuration");
         let status = Command::new("podman")
-            .args(&["play", "kube", "--pull=missing", path.to_str().unwrap()])
+            .args(&["play", "kube", path.to_str().unwrap()])
             .status()
             .await?;
 

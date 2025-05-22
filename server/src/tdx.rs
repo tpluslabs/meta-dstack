@@ -1,7 +1,10 @@
 use crate::Wrapper;
 use bytes::Bytes;
 use std::sync::Arc;
-use tokio::sync::{mpsc, oneshot};
+use tokio::{
+    process::Command,
+    sync::{mpsc, oneshot},
+};
 
 mod quote;
 
@@ -28,6 +31,20 @@ impl PodManager {
     }
 
     pub async fn worker(&mut self) {
+        let _ = Command::new("podman")
+            .args(&["pull", "k8s.gcr.io/pause:3.8"])
+            .status()
+            .await;
+
+        let _ = Command::new("sed")
+            .args(&[
+                "-i",
+                "/^\\[engine\\]/a infra_image = \"k8s.gcr.io/pause:3.8\"",
+                "/etc/containers/containers.conf",
+            ])
+            .status()
+            .await;
+
         while let Some(task) = self.rx.recv().await {
             match task {
                 PodManagerInstruction::CreatePod(pod_config) => {
