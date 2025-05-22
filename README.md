@@ -45,4 +45,4 @@ The `meta-dstack` layer is based off the binary you're running after boot, curre
 
 # Build
 
-You can now build the `cvm-image-minimal` image with bitbake! 
+You can now build the `core-image-minimal` image with bitbake! 
