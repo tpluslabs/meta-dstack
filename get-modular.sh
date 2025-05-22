@@ -11,7 +11,7 @@ rm -rf meta-confidential-compute
 git clone https://github.com/flashbots/meta-confidential-compute
 cd meta-confidential-compute
 git checkout v3
-cd recipes-core; rm -rf cvm-*;cd ..
+cd recipes-core; rm -rf cvm-*;cd ..;cd ..
 
 git clone https://git.yoctoproject.org/meta-virtualization.git
 cd meta-virtualization/
