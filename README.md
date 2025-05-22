@@ -95,6 +95,39 @@ curl -X POST \
      http://serveraddress:3030/pods
 ```
 
+# GCP Deployment
+
+This is only tested on a gcp tdx deployment. To replicate:
+
+1. From your image builder machine, push the wic to a bucket of your choice (if you don't have one create it `gcloud storage buckets create "gs://${tdx-gcp}"`):
+
+```
+gsutil cp core-image-minimal-tdx-gcp.rootfs-{latest time tag}.wic.tar.gz gs://tdx-gcp
+```
+
+2. Create custom image on gcp:
+
+```
+gcloud compute images create "tplus-dstack" \
+    --source-uri="gs://tdx-gcp/core-image-minimal-tdx-gcp.rootfs-20250522164856.wic.tar.gz" \
+    --guest-os-features=UEFI_COMPATIBLE,VIRTIO_SCSI_MULTIQUEUE,GVNIC,TDX_CAPABLE
+```
+
+3. Create the td vm instance:
+
+```
+gcloud compute instances create "tplus-dstack" \
+        --zone="..." \
+        --machine-type="..." \
+        --image="tplus-dstack" \
+        --confidential-compute-type=TDX \
+        --maintenance-policy=TERMINATE \ 
+        --no-shielded-secure-boot \
+        --no-shielded-vtpm
+```
+
+> note: disable the secure boot + vtpm so google's firmware measures "according" to spec (even if vf doesn't seem to be public?).
+
 # License
 
 MIT license.
