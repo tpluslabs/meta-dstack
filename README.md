@@ -1,5 +1,7 @@
 # Meta Dstack
 
+(inspired by [flashbox](https://github.com/flashbots/flashbox/))
+
 ### Minimal dstackOS with virtualization!
 
 This repo provides:
@@ -48,6 +50,49 @@ You can now build the `core-image-minimal` image with bitbake!
 ```
 cd srcs/poky/
 bitbake core-image-minimal
+```
+
+# Usage
+
+To deploy a new pod just post the pod.yml to {serveraddress}:3030/pods.
+
+> It's important to specify the image source, else mini-server will hang (will change soon). For example, don't specify `image: alpine:latest` rather `image: docker.io/library/alpine:latest`.
+
+### Example
+
+This pod will just log the obtained quote:
+
+```
+echo -e "apiVersion: v1
+kind: Pod
+metadata:
+  name: echo-pod
+spec:
+  hostNetwork: true
+  restartPolicy: Never
+  containers:
+    - name: echo
+      image: docker.io/library/alpine:latest
+      imagePullPolicy: ifnotpresent
+      command:
+        - sh
+        - -c
+        - |
+          while true; do
+            wget -qO- http://0.0.0.0:3030/quote/2c5fd2a29c8ab5c4a329b1d26b225758
+            echo
+            sleep 5
+          done
+" > pod.yml
+```
+
+Then post the pod:
+
+```
+curl -X POST \
+     -H "Content-Type: application/x-yaml" \
+     --data-binary @pod.yml \
+     http://serveraddress:3030/pods
 ```
 
 # License
