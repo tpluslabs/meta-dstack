@@ -5,7 +5,7 @@
  #DISTRO_FEATURES:class-nativesdk = "${CVM_DISTRO_FEATURES_NATIVE} tpm2"
  
 -DISTRO_EXTRA_RDEPENDS = "date-sync ca-certificates"
-+DISTRO_EXTRA_RDEPENDS = "date-sync dstack-sync ca-certificates"
++DISTRO_EXTRA_RDEPENDS = "date-sync dstack-sync ca-certificates podman"
  DISTRO_EXTRA_RDEPENDS:append = '${@bb.utils.contains_any("IMAGE_FEATURES", [ "debug-tweaks" ], " dropbear", "",d)}'
  
  # FIXME: Consider adding "modules" to MACHINE_FEATURES and using that in

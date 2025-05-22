@@ -12,6 +12,9 @@ git clone https://github.com/flashbots/meta-confidential-compute
 cd meta-confidential-compute
 git checkout v3
 cd recipes-core; rm -rf cvm-*;cd ..
+git clone https://github.com/flashbots/meta-custom-podman
+mv meta-custom-podman/recipes-core/images/cvm-initramfs.bbappend meta-custom-podman/recipes-core/images/core-image-minimal.bbappend
+bitbake-layers add-layer meta-custom-podman
 cd ..
 
 echo "Applying dstack patches"
