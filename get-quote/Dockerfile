@@ -10,13 +10,6 @@ WORKDIR /usr/src/app
 # Copy workspace definition and lockfile first to leverage Docker cache.
 COPY Cargo.toml Cargo.lock ./
 
-# Copy all source code for the workspace.
-# This includes all binaries, libraries, and messages crates.
-COPY bin/ ./bin/
-COPY lib/ ./lib/
-COPY messages/ ./messages/
-# Add other source directories if they are part of the workspace or local path dependencies:
-# COPY dependencies/ ./dependencies/
 
 # The -p flag specifies the package within the workspace.
 RUN cargo build --release -p get-quote
