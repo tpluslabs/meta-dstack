@@ -10,11 +10,6 @@ WORKDIR /usr/src/app
 # Copy workspace definition and lockfile first to leverage Docker cache.
 COPY Cargo.toml Cargo.lock ./
 
-COPY rust-toolchain.toml ./
-RUN TOOLCHAIN_VERSION=$(grep "channel" rust-toolchain.toml | cut -d'"' -f2 || echo "stable") && \
-    rustup toolchain install "${TOOLCHAIN_VERSION}" && \
-    rustup default "${TOOLCHAIN_VERSION}"
-
 # Copy all source code for the workspace.
 # This includes all binaries, libraries, and messages crates.
 COPY bin/ ./bin/
