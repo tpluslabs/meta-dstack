@@ -16,6 +16,7 @@ pub struct PodManager {
 pub enum PodManagerInstruction {
     CreatePod(Bytes),
     RequestQuote((String, oneshot::Sender<Result<String, warp::Rejection>>)),
+    RequestPods(oneshot::Sender<Vec<[u8; 48]>>),
 }
 
 impl PodManager {
@@ -54,6 +55,11 @@ impl PodManager {
                 PodManagerInstruction::RequestQuote((report_data, sender)) => {
                     let resp = self.get_quote(report_data).await;
                     let _ = sender.send(resp);
+                }
+
+                PodManagerInstruction::RequestPods(sender) => {
+                    let pods = self.loaded_pods.clone();
+                    let _ = sender.send(pods);
                 }
             }
         }

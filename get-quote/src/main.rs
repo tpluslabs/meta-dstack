@@ -12,3 +12,4 @@ async fn main() {
     let quote = get_quote_from_dstack("testdata").await;
     println!("{:?}", quote);
 }
+

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use podman::handle_pod_yml;
+use podman::{handle_pod_yml, handle_request_pods};
 use tdx::{PodManager, handle_quote_request};
 use tokio::sync::mpsc;
 use tracing::{Level, info};
@@ -32,6 +32,11 @@ async fn main() {
         .and(warp::body::bytes())
         .and_then(handle_pod_yml);
 
+    let list_pods = warp::get()
+        .and(warp::path("pods"))
+        .and(sender.clone())
+        .and_then(handle_request_pods);
+
     let get_quote = warp::get()
         .and(warp::path!("quote" / String))
         .and(sender)
@@ -42,7 +47,7 @@ async fn main() {
         .map(|| warp::reply::json(&serde_json::json!({"status": "ok"})));
 
     info!("Server running at http://0.0.0.0:3030");
-    let routes = pods.or(status).or(get_quote);
+    let routes = pods.or(status).or(get_quote).or(list_pods);
     warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
 }
 
