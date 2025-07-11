@@ -1,18 +1,12 @@
-# Dockerfile for the mini-tplus binary, part of the tplus-core workspace.
-# Build context: Root of the tplus-core repository.
-
 # ---- Build Stage ----
 # Uses Rust 1.86, consistent with the project's toolchain.
 FROM rust:1.86 AS builder
 
 WORKDIR /usr/src/app
 
-# Copy workspace definition and lockfile first to leverage Docker cache.
-COPY Cargo.toml Cargo.lock ./
+COPY . .
 
-
-# The -p flag specifies the package within the workspace.
-RUN cargo build --release -p get-quote
+RUN cargo build --release
 
 # ---- Runtime Stage ----
 # Use Debian Bookworm (slim variant) as the base, which includes OpenSSL 3.x.
@@ -30,11 +24,9 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY --from=builder /usr/src/app/target/release/get_quote /usr/local/bin/get_quote
+COPY --from=builder /usr/src/app/target/release/get-quote /usr/local/bin/get-quote
 
-# For runtime configuration, mount a volume or use Kubernetes ConfigMaps. Leaving for debugging.
-# COPY config /app/config
 
 ENV RUST_LOG="debug"
 
-CMD ["/usr/local/bin/get_quote", "/app/config/ce.toml"]
+CMD ["/usr/local/bin/get-quote"]
