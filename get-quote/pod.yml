@@ -5,5 +5,5 @@ metadata:
 spec:
   hostNetwork: true
   containers:
-    - name: clearing-engine-container
-      image: docker.io/xycloo/clearing-engine-test:latest
+    - name: get-quote-container
+      image: docker.io/xycloo/get-quote-test:latest
