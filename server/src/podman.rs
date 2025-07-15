@@ -1,7 +1,4 @@
-use crate::{
-    Wrapper,
-    tdx::{PodManager, PodManagerInstruction},
-};
+use crate::tdx::{PodManager, PodManagerInstruction};
 use bytes::Bytes;
 use sha2::Digest;
 use std::{io::Write, path::PathBuf, sync::Arc};

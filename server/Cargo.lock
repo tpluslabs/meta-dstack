@@ -997,6 +997,7 @@ dependencies = [
  "tdx-attestation",
  "tempfile",
  "tokio",
+ "tokio-util",
  "tracing",
  "tracing-subscriber",
  "tsm-client 0.1.0 (git+https://github.com/tpluslabs/rs-configfs-tsm-quoting?rev=0b3bf98)",

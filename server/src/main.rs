@@ -1,11 +1,13 @@
 use std::sync::Arc;
 
+use debug::{LogsManager, download_handler, handle_logs_request};
 use podman::{handle_pod_yml, handle_request_pods};
 use tdx::{PodManager, handle_quote_request};
 use tokio::sync::mpsc;
 use tracing::{Level, info};
 use warp::{Filter, reject::Reject};
 
+mod debug;
 mod podman;
 mod tdx;
 
@@ -16,14 +18,21 @@ async fn main() {
     let (tx, rx) = mpsc::channel(10);
 
     let sender = Arc::new(tx.clone());
-    let sender = warp::any().map({
-        let sender = Arc::clone(&sender);
-        move || Arc::clone(&sender)
-    });
+    let sender = warp::any().map({ move || Arc::clone(&sender) });
+
+    let (logs_tx, logs_rx) = mpsc::channel(10);
+
+    let logs_sender = Arc::new(logs_tx.clone());
+    let logs_sender = warp::any().map({ move || Arc::clone(&logs_sender) });
 
     tokio::spawn(async {
         let mut manager = PodManager::new(rx);
         manager.worker().await;
+    });
+
+    tokio::spawn(async {
+        let mut manager = LogsManager::new(logs_rx);
+        manager.worker(logs_tx).await;
     });
 
     let pods = warp::post()
@@ -46,8 +55,22 @@ async fn main() {
         .and(warp::path("status"))
         .map(|| warp::reply::json(&serde_json::json!({"status": "ok"})));
 
+    let download_logs = warp::path!("logs")
+        .and(warp::get())
+        .and_then(download_handler);
+
+    let get_logs = warp::post()
+        .and(warp::path!("logs" / "dump"))
+        .and(logs_sender)
+        .and_then(handle_logs_request);
+
     info!("Server running at http://0.0.0.0:3030");
-    let routes = pods.or(status).or(get_quote).or(list_pods);
+    let routes = pods
+        .or(status)
+        .or(get_quote)
+        .or(list_pods)
+        .or(download_logs)
+        .or(get_logs);
     warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
 }
 
