@@ -18,3 +18,9 @@ dcap-qvl = "0.1.6"
 hex = "0.4.3"
 sha2 = "0.10.9"
 tokio-util  = "0.7.15"
+
+[features]
+default = ["tplus"]
+
+# Enables pod checking at deploy time. Less composable but simpler and safe. 
+tplus = []

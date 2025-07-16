@@ -8,9 +8,41 @@ use tokio::{
     sync::{mpsc, oneshot},
 };
 
+const ALLOWED_PODS_HEX: [&str; 6] = [
+    "c084f54924643800c2b2d1d53df9faa90134714eb2a45036ca59ec06cca1a06dcc227e1dfdd2f8558c51e67039766a63",
+    "b1dd776d5773889d59791f089ec5dc118fd09deb0d1b7aa4a0fdd5a450805525b0aae04f556417497f057b3f1ae126d4",
+    "05523adf63412be53a0adbc1d88a327efb13e88cee0e01fed047a52977c2c74c11905bfdd74fdbf5c4d8cb3c3dd28759",
+    "e12ea8e5d2fdd07707a62a9fb13bae9bc3d4bbf4778ab7dae948a43aa87eeec4440703957c78b3d5435c1ed9b71940ed",
+    "c379f138eaea0e2001cc1427ecd0125531925953f10ecc22a0386f94a50b858d2356c2bdd04e53ed20b509d7e94044da",
+    // get quote test
+    "bc1cdd6454a75d92bd18f09375e31cabf351aa171f55887a94cf4528002282ae743258dfb796c01006923175d8c20f51",
+];
+
+fn allowed_pods() -> anyhow::Result<Vec<[u8; 48]>> {
+    ALLOWED_PODS_HEX
+        .iter()
+        .map(|hex| {
+            let bytes = hex::decode(hex)?;
+            <[u8; 48]>::try_from(bytes.as_slice())
+                .map_err(|_| anyhow::anyhow!("invalid pod length"))
+        })
+        .collect()
+}
+
+fn is_allowed_pod(hash: &[u8; 48]) -> anyhow::Result<bool> {
+    let allowed = allowed_pods()?;
+    Ok(allowed.contains(hash))
+}
+
 impl PodManager {
     pub(crate) async fn handle_pod_yml(&mut self, pod_config: Bytes) -> anyhow::Result<()> {
         let pod_hash = sha2::Sha384::digest(&pod_config).try_into().unwrap();
+
+        #[cfg(feature = "tplus")]
+        if !is_allowed_pod(&pod_hash)? {
+            anyhow::bail!("pod not allowed")
+        }
+
         self.loaded_pods.push(pod_hash);
         tracing::info!("handling new pod config.");
 
