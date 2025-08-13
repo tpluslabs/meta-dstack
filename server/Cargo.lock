@@ -992,6 +992,7 @@ dependencies = [
  "bytes",
  "dcap-qvl",
  "hex",
+ "serde",
  "serde_json",
  "sha2",
  "tdx-attestation",

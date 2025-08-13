@@ -11,12 +11,18 @@ mod quote;
 pub struct PodManager {
     rx: mpsc::Receiver<PodManagerInstruction>,
     pub(crate) loaded_pods: Vec<[u8; 48]>,
+
+    #[cfg(not(feature = "tplus"))]
+    pub dynamic_allowed_pods: Vec<[u8; 48]>,
 }
 
 pub enum PodManagerInstruction {
     CreatePod(Bytes),
     RequestQuote((String, oneshot::Sender<Result<String, warp::Rejection>>)),
     RequestPods(oneshot::Sender<Vec<[u8; 48]>>),
+
+    #[cfg(not(feature = "tplus"))]
+    AllowPods(Vec<[u8; 48]>),
 }
 
 impl PodManager {
@@ -24,6 +30,9 @@ impl PodManager {
         Self {
             rx,
             loaded_pods: Vec::new(),
+
+            #[cfg(not(feature = "tplus"))]
+            dynamic_allowed_pods: Vec::new(),
         }
     }
 
@@ -60,6 +69,14 @@ impl PodManager {
                 PodManagerInstruction::RequestPods(sender) => {
                     let pods = self.loaded_pods.clone();
                     let _ = sender.send(pods);
+                }
+
+                #[cfg(not(feature = "tplus"))]
+                PodManagerInstruction::AllowPods(allowed) => {
+                    // NB: it's a one-time thing for safety even in debug
+                    if self.dynamic_allowed_pods.is_empty() {
+                        self.dynamic_allowed_pods = allowed
+                    }
                 }
             }
         }
