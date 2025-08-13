@@ -73,6 +73,7 @@ impl PodManager {
 
                 #[cfg(not(feature = "tplus"))]
                 PodManagerInstruction::AllowPods(allowed) => {
+                    tracing::info!("setting {:?} as allowed pods", allowed);
                     // NB: it's a one-time thing for safety even in debug
                     if self.dynamic_allowed_pods.is_empty() {
                         self.dynamic_allowed_pods = allowed

@@ -51,7 +51,7 @@ async fn main() {
         warp::any().and_then(|| async move { Ok::<_, warp::Rejection>("disabled") });
 
     let pods = warp::post()
-        .and(warp::path("pods"))
+        .and(warp::path!("pods" / "deploy"))
         .and(sender.clone())
         .and(warp::body::bytes())
         .and_then(handle_pod_yml);
