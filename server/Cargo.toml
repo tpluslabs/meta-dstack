@@ -21,7 +21,10 @@ sha2 = "0.10.9"
 tokio-util  = "0.7.15"
 
 [features]
-default = ["tplus"]
+default = ["tplus", "tdx"]
 
 # Enables pod checking at deploy time. Less composable but simpler and safe. 
 tplus = []
+
+# Quote is gotten through the tsm client and is not mocked.
+tdx = []
