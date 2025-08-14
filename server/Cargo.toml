@@ -19,6 +19,7 @@ dcap-qvl = "0.1.6"
 hex = "0.4.3"
 sha2 = "0.10.9"
 tokio-util  = "0.7.15"
+serde_yaml = "0.9.34+deprecated"
 
 [features]
 default = ["tplus", "tdx"]
