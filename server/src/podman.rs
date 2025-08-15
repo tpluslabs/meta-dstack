@@ -1,8 +1,6 @@
 use crate::tdx::{PodManager, PodManagerInstruction};
 use bytes::Bytes;
 use serde::Deserialize;
-#[cfg(not(feature = "tplus"))]
-use serde::Deserialize;
 use sha2::Digest;
 use std::{io::Write, path::PathBuf, sync::Arc};
 use tempfile::NamedTempFile;
